@@ -9,7 +9,7 @@
 import Foundation
 import RealmSwift
 
-class StorageManager {
+final class StorageManager {
     static let shared = StorageManager()
     let realm = try! Realm()
     
@@ -58,6 +58,26 @@ class StorageManager {
         }
     }
     
+    func delete(_ task: Task) {
+        write {
+            realm.delete(task)
+        }
+    }
+    
+    func edit(_ task: Task, newTitle: String, newNote: String) {
+        write {
+            task.title = newTitle
+            task.note = newNote
+        }
+    }
+    
+    func done(_ task: Task) {
+        write {
+            task.isComplete = task.isComplete ? false : true
+        }
+    }
+    
+    // MARK: - Helper
     private func write(completion: () -> Void) {
         do {
             try realm.write {
@@ -66,6 +86,13 @@ class StorageManager {
         } catch {
             print(error.localizedDescription)
         }
-        
+    }
+}
+
+// MARK: - Task lists sorting
+extension Results {
+    func sort<T: TaskList>(by keyPath: String, ascending: Bool) -> Results<T>? {
+        guard let taskList = self as? Results<T> else { return nil }
+        return taskList.sorted(byKeyPath: keyPath, ascending: ascending)
     }
 }

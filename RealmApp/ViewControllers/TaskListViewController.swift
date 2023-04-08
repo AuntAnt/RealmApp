@@ -10,7 +10,9 @@ import UIKit
 import RealmSwift
 
 final class TaskListViewController: UITableViewController {
-
+    
+    @IBOutlet var sortingSegmentedControl: UISegmentedControl!
+    
     private var taskLists: Results<TaskList>!
     private let storageManager = StorageManager.shared
     
@@ -24,7 +26,8 @@ final class TaskListViewController: UITableViewController {
         
         navigationItem.rightBarButtonItem = addButton
         navigationItem.leftBarButtonItem = editButtonItem
-        taskLists = storageManager.realm.objects(TaskList.self)
+        setSortingActions(sortingSegmentedControl)
+        taskLists = storageManager.realm.objects(TaskList.self).sort(by: "date", ascending: false)
         createTempData()
     }
     
@@ -39,13 +42,49 @@ final class TaskListViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
-        var content = cell.defaultContentConfiguration()
-        let taskList = taskLists[indexPath.row]
-        content.text = taskList.title
-        content.secondaryText = taskList.tasks.count.formatted()
-        cell.contentConfiguration = content
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: "TaskListCell",
+            for: indexPath
+        ) as? TaskTableViewCell else { return UITableViewCell() }
+        
+        cell.taskListNameLabel.text = taskLists[indexPath.row].title
+        
+        let currentTasks = taskLists[indexPath.row].tasks
+        
+        if currentTasks.count == 0 {
+            cell.detailLabel.text = "0"
+        } else {
+            let uncompletedTasks = currentTasks.where {
+                $0.isComplete == false
+            }.count
+                
+            if uncompletedTasks == 0 {
+                cell.detailLabel.attributedText = getDoneCheckMark()
+            } else {
+                cell.detailLabel.text = uncompletedTasks.formatted()
+            }
+        }
+        
         return cell
+    }
+    
+    private func getDoneCheckMark() -> NSMutableAttributedString {
+        let attachment = NSTextAttachment()
+        attachment.image = UIImage(systemName: "checkmark")
+        
+        return NSMutableAttributedString(attachment: attachment)
+    }
+    
+    private func setSortingActions(_ segmentedControl: UISegmentedControl) {
+        let sortByDateAction = UIAction(title: "Date") { [unowned self] _ in
+            taskLists = taskLists.sort(by: "date", ascending: false)
+        }
+        segmentedControl.setAction(sortByDateAction, forSegmentAt: 0)
+
+        let sortByAlphabetAction = UIAction(title: "A-Z") { [unowned self] _ in
+            taskLists = taskLists.sort(by: "title", ascending: true)
+        }
+        segmentedControl.setAction(sortByAlphabetAction, forSegmentAt: 1)
     }
     
     // MARK: - Table View Data Source
@@ -85,6 +124,7 @@ final class TaskListViewController: UITableViewController {
     }
 
     @IBAction func sortingList(_ sender: UISegmentedControl) {
+        tableView.reloadData()
     }
     
     @objc private func addButtonPressed() {

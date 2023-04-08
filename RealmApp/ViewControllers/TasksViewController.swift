@@ -54,6 +54,38 @@ final class TasksViewController: UITableViewController {
         return cell
     }
     
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [unowned self] _, _, _ in
+            storageManager.delete(
+                indexPath.section == 0
+                    ? currentTasks[indexPath.row]
+                    : completedTasks[indexPath.row]
+            )
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
+        
+        let editAction = UIContextualAction(style: .normal, title: "Edit") { [unowned self] _, _, isDone in
+            showAlert(with: currentTasks[indexPath.row]) {
+                tableView.reloadRows(at: [indexPath], with: .automatic)
+            }
+            isDone(true)
+        }
+        editAction.backgroundColor = .orange
+        
+        let doneAction = UIContextualAction(style: .normal, title: indexPath.section == 0 ? "Done" : "Undone") { [unowned self] _, _, isDone in
+            storageManager.done(
+                indexPath.section == 0
+                    ? currentTasks[indexPath.row]
+                    : completedTasks[indexPath.row]
+            )
+            tableView.reloadData()
+            isDone(true)
+        }
+        doneAction.backgroundColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1)
+        
+        return UISwipeActionsConfiguration(actions: [doneAction, editAction, deleteAction])
+    }
+    
     @objc private func addButtonPressed() {
         showAlert()
     }
@@ -68,7 +100,8 @@ extension TasksViewController {
         )
         let alert = taskAlertFactory.createAlert { [weak self] taskTitle, taskNote in
             if let task, let completion {
-                // TODO: - edit task
+                self?.storageManager.edit(task, newTitle: taskTitle, newNote: taskNote)
+                completion()
             } else {
                 self?.save(task: taskTitle, withNote: taskNote)
             }
