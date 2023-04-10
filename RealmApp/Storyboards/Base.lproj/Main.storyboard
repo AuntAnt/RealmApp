@@ -27,7 +27,7 @@
                             </connections>
                         </segmentedControl>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TaskListCell" textLabel="Im3-OX-jW9" detailTextLabel="CEj-Wn-lbw" style="IBUITableViewCellStyleValue1" id="9pn-eV-9Sk" customClass="TaskTableViewCell" customModule="RealmApp" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TaskListCell" textLabel="Im3-OX-jW9" detailTextLabel="CEj-Wn-lbw" style="IBUITableViewCellStyleValue1" id="9pn-eV-9Sk">
                                 <rect key="frame" x="0.0" y="82" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="9pn-eV-9Sk" id="fag-2w-FCu">
@@ -51,8 +51,6 @@
                                     </subviews>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <outlet property="detailLabel" destination="CEj-Wn-lbw" id="hfJ-Ml-JFR"/>
-                                    <outlet property="taskListNameLabel" destination="Im3-OX-jW9" id="qIj-rh-Kmu"/>
                                     <segue destination="4Vi-BZ-5h4" kind="show" id="7zx-D3-SiA"/>
                                 </connections>
                             </tableViewCell>

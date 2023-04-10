@@ -26,8 +26,7 @@ final class TaskListViewController: UITableViewController {
         
         navigationItem.rightBarButtonItem = addButton
         navigationItem.leftBarButtonItem = editButtonItem
-        setSortingActions(sortingSegmentedControl)
-        taskLists = storageManager.realm.objects(TaskList.self).sort(by: "date", ascending: false)
+        taskLists = storageManager.realm.objects(TaskList.self)
         createTempData()
     }
     
@@ -42,28 +41,9 @@ final class TaskListViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: "TaskListCell",
-            for: indexPath
-        ) as? TaskTableViewCell else { return UITableViewCell() }
-        
-        cell.taskListNameLabel.text = taskLists[indexPath.row].title
-        
-        let currentTasks = taskLists[indexPath.row].tasks
-        
-        if currentTasks.count == 0 {
-            cell.detailLabel.text = "0"
-        } else {
-            let uncompletedTasks = currentTasks.where {
-                $0.isComplete == false
-            }.count
-                
-            if uncompletedTasks == 0 {
-                cell.detailLabel.attributedText = getDoneCheckMark()
-            } else {
-                cell.detailLabel.text = uncompletedTasks.formatted()
-            }
-        }
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
+        let taskList = taskLists[indexPath.row]
+        cell.configure(with: taskList)
         
         return cell
     }
@@ -73,18 +53,6 @@ final class TaskListViewController: UITableViewController {
         attachment.image = UIImage(systemName: "checkmark")
         
         return NSMutableAttributedString(attachment: attachment)
-    }
-    
-    private func setSortingActions(_ segmentedControl: UISegmentedControl) {
-        let sortByDateAction = UIAction(title: "Date") { [unowned self] _ in
-            taskLists = taskLists.sort(by: "date", ascending: false)
-        }
-        segmentedControl.setAction(sortByDateAction, forSegmentAt: 0)
-
-        let sortByAlphabetAction = UIAction(title: "A-Z") { [unowned self] _ in
-            taskLists = taskLists.sort(by: "title", ascending: true)
-        }
-        segmentedControl.setAction(sortByAlphabetAction, forSegmentAt: 1)
     }
     
     // MARK: - Table View Data Source
@@ -124,6 +92,10 @@ final class TaskListViewController: UITableViewController {
     }
 
     @IBAction func sortingList(_ sender: UISegmentedControl) {
+        taskLists = sender.selectedSegmentIndex == 0
+            ? taskLists.sorted(byKeyPath: "date")
+            : taskLists.sorted(byKeyPath: "title")
+        
         tableView.reloadData()
     }
     

@@ -73,7 +73,7 @@ final class StorageManager {
     
     func done(_ task: Task) {
         write {
-            task.isComplete = task.isComplete ? false : true
+            task.isComplete.toggle()
         }
     }
     
@@ -86,13 +86,5 @@ final class StorageManager {
         } catch {
             print(error.localizedDescription)
         }
-    }
-}
-
-// MARK: - Task lists sorting
-extension Results {
-    func sort<T: TaskList>(by keyPath: String, ascending: Bool) -> Results<T>? {
-        guard let taskList = self as? Results<T> else { return nil }
-        return taskList.sorted(byKeyPath: keyPath, ascending: ascending)
     }
 }
